@@ -114,6 +114,7 @@ export var KeycloakProvider = function (props) {
         return __generator(this, function (_a) {
             if (!savedTokens)
                 throw new Error('Not logged in.');
+            clearTimeout(refreshHandle);
             if (everywhere) {
                 AuthSession.revokeAsync(__assign({ token: savedTokens === null || savedTokens === void 0 ? void 0 : savedTokens.accessToken }, config), discovery).catch(function (e) { return console.error(e); });
                 saveTokens(null);
