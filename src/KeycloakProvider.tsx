@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect, useState } from 'react';
+import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
 import * as AuthSession from 'expo-auth-session';
 import {
   TokenResponse,
@@ -50,7 +50,7 @@ export const KeycloakProvider: FC<IKeycloakConfiguration> = (props) => {
 
   const updateState = useCallback(
     (callbackValue: any) => {
-      const tokens = callbackValue?.tokens ?? null;
+      const tokens = callbackValue ?? null;
       if (!!tokens) {
         saveTokens(tokens);
         if (
@@ -60,10 +60,10 @@ export const KeycloakProvider: FC<IKeycloakConfiguration> = (props) => {
           clearTimeout(refreshHandle);
           setRefreshHandle(
             setTimeout(
-              handleTokenRefresh,
+              () => refreshCallBackRef.current(),
               ((tokens as TokenResponse).expiresIn! -
                 (props.refreshTimeBuffer ?? REFRESH_TIME_BUFFER)) *
-                1000,
+              1000,
             ),
           );
         }
@@ -114,12 +114,21 @@ export const KeycloakProvider: FC<IKeycloakConfiguration> = (props) => {
     [discovery, savedTokens],
   );
 
+  const refreshCallBackRef = useRef(handleTokenRefresh);
+
   useEffect(() => {
-    if (hydrated) handleTokenRefresh();
+    refreshCallBackRef.current = handleTokenRefresh;
+  }, [savedTokens])
+
+  useEffect(() => {
+    if (hydrated) refreshCallBackRef.current();
   }, [hydrated]);
 
   useEffect(() => {
-    handleTokenExchange({ response, discovery, config }).then(updateState);
+    handleTokenExchange({ response, discovery, config })
+      .then((res) => {
+        if (res !== null) updateState(res.tokens);
+      });
   }, [response]);
 
   return (
