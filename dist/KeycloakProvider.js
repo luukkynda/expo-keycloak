@@ -54,17 +54,21 @@ import useAsyncStorage from './useAsyncStorage';
 import { handleTokenExchange } from './handleTokenExchange';
 import { NATIVE_REDIRECT_PATH, REFRESH_TIME_BUFFER, TOKEN_STORAGE_KEY, } from './const';
 export var KeycloakProvider = function (props) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e;
     var discovery = useAutoDiscovery(getRealmURL(props));
     var redirectUri = AuthSession.makeRedirectUri({
-        native: ((_a = props.scheme) !== null && _a !== void 0 ? _a : 'exp') + "://" + ((_b = props.nativeRedirectPath) !== null && _b !== void 0 ? _b : NATIVE_REDIRECT_PATH),
-        // @ts-ignore: Unreachable code error
-        useProxy: !props.scheme,
+        native: ((_a = props.scheme) !== null && _a !== void 0 ? _a : 'exp') + "://" + ((_b = props.nativeRedirectPath) !== null && _b !== void 0 ? _b : NATIVE_REDIRECT_PATH)
     });
-    var _d = useAsyncStorage((_c = props.tokenStorageKey) !== null && _c !== void 0 ? _c : TOKEN_STORAGE_KEY, null), savedTokens = _d[0], saveTokens = _d[1], hydrated = _d[2];
+    if (!!props.scheme) {
+        redirectUri = AuthSession.makeRedirectUri({
+            native: ((_c = props.scheme) !== null && _c !== void 0 ? _c : 'exp') + "://" + ((_d = props.nativeRedirectPath) !== null && _d !== void 0 ? _d : NATIVE_REDIRECT_PATH),
+            scheme: props.scheme
+        });
+    }
+    var _f = useAsyncStorage((_e = props.tokenStorageKey) !== null && _e !== void 0 ? _e : TOKEN_STORAGE_KEY, null), savedTokens = _f[0], saveTokens = _f[1], hydrated = _f[2];
     var config = __assign({ redirectUri: redirectUri }, props);
-    var _e = useAuthRequest(__assign({ usePKCE: false }, config), discovery), request = _e[0], response = _e[1], promptAsync = _e[2];
-    var _f = useState(null), refreshHandle = _f[0], setRefreshHandle = _f[1];
+    var _g = useAuthRequest(__assign({ usePKCE: false }, config), discovery), request = _g[0], response = _g[1], promptAsync = _g[2];
+    var _h = useState(null), refreshHandle = _h[0], setRefreshHandle = _h[1];
     var updateState = useCallback(function (callbackValue) {
         var _a;
         var tokens = callbackValue !== null && callbackValue !== void 0 ? callbackValue : null;

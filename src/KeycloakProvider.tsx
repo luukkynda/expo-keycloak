@@ -28,12 +28,16 @@ export interface IKeycloakConfiguration extends Partial<AuthRequestConfig> {
 }
 
 export const KeycloakProvider: FC<IKeycloakConfiguration> = (props) => {
-  const discovery = useAutoDiscovery(getRealmURL(props));  
-  const redirectUri = AuthSession.makeRedirectUri({
-    native: `${props.scheme ?? 'exp'}://${props.nativeRedirectPath ?? NATIVE_REDIRECT_PATH}`,
-    // @ts-ignore: Unreachable code error
-    useProxy: !props.scheme,
+  const discovery = useAutoDiscovery(getRealmURL(props));
+  let redirectUri = AuthSession.makeRedirectUri({
+    native: `${props.scheme ?? 'exp'}://${props.nativeRedirectPath ?? NATIVE_REDIRECT_PATH}`    
   });
+  if (!!props.scheme) {
+    redirectUri = AuthSession.makeRedirectUri({
+      native: `${props.scheme ?? 'exp'}://${props.nativeRedirectPath ?? NATIVE_REDIRECT_PATH}`,
+      scheme: props.scheme
+    });
+  }
   const [
     savedTokens,
     saveTokens,
@@ -64,7 +68,7 @@ export const KeycloakProvider: FC<IKeycloakConfiguration> = (props) => {
               () => refreshCallBackRef.current(),
               ((tokens as TokenResponse).expiresIn! -
                 (props.refreshTimeBuffer ?? REFRESH_TIME_BUFFER)) *
-              1000,
+                1000,
             ),
           );
         }
@@ -114,7 +118,7 @@ export const KeycloakProvider: FC<IKeycloakConfiguration> = (props) => {
     },
     [discovery, savedTokens],
   );
-
+  
   const refreshCallBackRef = useRef(handleTokenRefresh);
 
   useEffect(() => {
@@ -127,9 +131,9 @@ export const KeycloakProvider: FC<IKeycloakConfiguration> = (props) => {
 
   useEffect(() => {
     handleTokenExchange({ response, discovery, config })
-      .then((res) => {
-        if (res !== null) updateState(res.tokens);
-      });
+    .then((res) => {
+      if (res !== null) updateState(res.tokens);
+    });
   }, [response]);
 
   return (
