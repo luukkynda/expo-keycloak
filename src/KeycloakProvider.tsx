@@ -28,9 +28,10 @@ export interface IKeycloakConfiguration extends Partial<AuthRequestConfig> {
 }
 
 export const KeycloakProvider: FC<IKeycloakConfiguration> = (props) => {
-  const discovery = useAutoDiscovery(getRealmURL(props));
+  const discovery = useAutoDiscovery(getRealmURL(props));  
   const redirectUri = AuthSession.makeRedirectUri({
     native: `${props.scheme ?? 'exp'}://${props.nativeRedirectPath ?? NATIVE_REDIRECT_PATH}`,
+    // @ts-ignore: Unreachable code error
     useProxy: !props.scheme,
   });
   const [
